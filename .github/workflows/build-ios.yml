@@ -14,6 +14,9 @@ on:
         description: NXBNVNB branch, tag or commit to build
         default: main
 
+permissions:
+  contents: write          # to publish the IPA as the 'latest' release
+
 jobs:
   ipa:
     runs-on: macos-15            # Xcode 16 (Capacitor 8 needs 16+)
@@ -58,3 +61,12 @@ jobs:
           name: NinjaLegends-unsigned-ipa
           path: NinjaLegends-unsigned.ipa
           compression-level: 0
+
+      - name: Publish as the "latest" release (one direct download link)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete latest --repo "$GITHUB_REPOSITORY" --yes --cleanup-tag || true
+          gh release create latest NinjaLegends-unsigned.ipa --repo "$GITHUB_REPOSITORY" \
+            --title "Ninja Legends (unsigned IPA)" \
+            --notes "Built from Pomu1144/NXBNVNB. Direct link: https://github.com/$GITHUB_REPOSITORY/releases/latest/download/NinjaLegends-unsigned.ipa"
