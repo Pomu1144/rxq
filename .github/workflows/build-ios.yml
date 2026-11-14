@@ -1,0 +1,60 @@
+name: Build iOS IPA (unsigned)
+
+# Builds the Ninja Legends iPhone app from Pomu1144/NXBNVNB (its Capacitor project in app/ios) into an
+# unsigned .ipa on a free GitHub macOS runner. NXBNVNB itself is only read, never changed.
+# Install the result with your sideloading tool (it signs it with your Apple ID).
+# Runs on every push to this repo's main branch, or by hand: Actions tab -> Build iOS IPA -> Run workflow.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: NXBNVNB branch, tag or commit to build
+        default: main
+
+jobs:
+  ipa:
+    runs-on: macos-15            # Xcode 16 (Capacitor 8 needs 16+)
+    timeout-minutes: 90
+    steps:
+      - name: Checkout the game (NXBNVNB)
+        uses: actions/checkout@v4
+        with:
+          repository: Pomu1144/NXBNVNB
+          ref: ${{ github.event.inputs.ref || 'main' }}
+
+      - name: Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install Capacitor
+        working-directory: app
+        run: npm ci
+
+      - name: Copy the web game into the app
+        working-directory: app
+        run: npm run sync
+
+      - name: Build (no code signing)
+        working-directory: app/ios/App
+        run: |
+          xcodebuild -project App.xcodeproj -target App -configuration Release -sdk iphoneos \
+            SYMROOT="$PWD/build" CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
+            build | tail -40
+
+      - name: Package the IPA
+        run: |
+          mkdir -p out/Payload
+          cp -R app/ios/App/build/Release-iphoneos/App.app out/Payload/
+          cd out && zip -qry ../NinjaLegends-unsigned.ipa Payload
+          ls -lh ../NinjaLegends-unsigned.ipa
+
+      - name: Upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: NinjaLegends-unsigned-ipa
+          path: NinjaLegends-unsigned.ipa
+          compression-level: 0
