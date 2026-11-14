@@ -65,9 +65,19 @@ jobs:
           npx cap sync ios
           cat capacitor.config.json
 
+      - name: Fix for Capacitor 8 (drop an override it no longer allows)
+        working-directory: app/ios/App/App
+        run: |
+          # CAPBridgeViewController.prefersHomeIndicatorAutoHidden is not open in Capacitor 8, so overriding it
+          # fails to compile ("overriding non-open property outside of its defining module"). Without it the
+          # home indicator just stays visible. Only this build's copy changes; NXBNVNB is untouched.
+          sed -i '' '/override var prefersHomeIndicatorAutoHidden/d' GameViewController.swift
+          grep -n "override var" GameViewController.swift
+
       - name: Build (no code signing)
         working-directory: app/ios/App
         run: |
+          set -o pipefail
           xcodebuild -project App.xcodeproj -target App -configuration Release -sdk iphoneos \
             SYMROOT="$PWD/build" CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
             build | tail -40
@@ -75,6 +85,7 @@ jobs:
       - name: Package the IPA
         run: |
           NAME=${{ matrix.variant == 'live' && 'NinjaLegends-live' || 'NinjaLegends-unsigned' }}
+          test -x app/ios/App/build/Release-iphoneos/App.app/App || { echo "no app binary: the build did not finish"; exit 1; }
           mkdir -p out/Payload
           cp -R app/ios/App/build/Release-iphoneos/App.app out/Payload/
           cd out && zip -qry ../$NAME.ipa Payload
