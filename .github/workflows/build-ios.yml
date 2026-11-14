@@ -1,8 +1,11 @@
 name: Build iOS IPA (unsigned)
 
-# Builds the Ninja Legends iPhone app from Pomu1144/NXBNVNB (its Capacitor project in app/ios) into an
-# unsigned .ipa on a free GitHub macOS runner. NXBNVNB itself is only read, never changed.
-# Install the result with your sideloading tool (it signs it with your Apple ID).
+# Builds the Ninja Legends iPhone app from Pomu1144/NXBNVNB (its Capacitor project in app/ios) on a free
+# GitHub macOS runner, in two versions, and publishes both as the "latest" release:
+#   NinjaLegends-live.ipa      a few MB: the app loads the game from the GitHub Pages site, so every change
+#                              pushed to NXBNVNB shows up on the next launch without reinstalling (needs internet)
+#   NinjaLegends-unsigned.ipa  the full offline app with all the game files inside (about 1.5 GB)
+# NXBNVNB itself is only read, never changed. Sign and install with your sideloading tool.
 # Runs on every push to this repo's main branch, or by hand: Actions tab -> Build iOS IPA -> Run workflow.
 
 on:
@@ -15,12 +18,18 @@ on:
         default: main
 
 permissions:
-  contents: write          # to publish the IPA as the 'latest' release
+  contents: write          # to publish the IPAs as the 'latest' release
+
+env:
+  LIVE_URL: https://pomu1144.github.io/NXBNVNB/
 
 jobs:
   ipa:
     runs-on: macos-15            # Xcode 16 (Capacitor 8 needs 16+)
     timeout-minutes: 90
+    strategy:
+      matrix:
+        variant: [live, full]
     steps:
       - name: Checkout the game (NXBNVNB)
         uses: actions/checkout@v4
@@ -37,9 +46,24 @@ jobs:
         working-directory: app
         run: npm ci
 
-      - name: Copy the web game into the app
+      - name: Full app - copy the web game into the app
+        if: matrix.variant == 'full'
         working-directory: app
         run: npm run sync
+
+      - name: Live app - point the app at the website instead of bundling the game
+        if: matrix.variant == 'live'
+        working-directory: app
+        run: |
+          node -e '
+            const fs = require("fs"); const p = "capacitor.config.json";
+            const c = JSON.parse(fs.readFileSync(p, "utf8"));
+            c.server = Object.assign({}, c.server, { url: process.env.LIVE_URL, cleartext: false });
+            fs.writeFileSync(p, JSON.stringify(c, null, 2));'
+          rm -rf www && mkdir www
+          printf '<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><body style="background:#101418;color:#ccc;font-family:-apple-system;display:flex;align-items:center;justify-content:center;height:100vh;margin:0"><p>Loading Ninja Legends&hellip; (needs an internet connection)</p><script>location.replace("%s")</script>' "$LIVE_URL" > www/index.html
+          npx cap sync ios
+          cat capacitor.config.json
 
       - name: Build (no code signing)
         working-directory: app/ios/App
@@ -50,23 +74,35 @@ jobs:
 
       - name: Package the IPA
         run: |
+          NAME=${{ matrix.variant == 'live' && 'NinjaLegends-live' || 'NinjaLegends-unsigned' }}
           mkdir -p out/Payload
           cp -R app/ios/App/build/Release-iphoneos/App.app out/Payload/
-          cd out && zip -qry ../NinjaLegends-unsigned.ipa Payload
-          ls -lh ../NinjaLegends-unsigned.ipa
+          cd out && zip -qry ../$NAME.ipa Payload
+          ls -lh ../$NAME.ipa
 
       - name: Upload
         uses: actions/upload-artifact@v4
         with:
-          name: NinjaLegends-unsigned-ipa
-          path: NinjaLegends-unsigned.ipa
+          name: ipa-${{ matrix.variant }}
+          path: '*.ipa'
           compression-level: 0
 
-      - name: Publish as the "latest" release (one direct download link)
+  release:
+    needs: ipa
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: ipa-*
+          merge-multiple: true
+      - name: Publish both as the "latest" release (direct download links)
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          ls -lh *.ipa
           gh release delete latest --repo "$GITHUB_REPOSITORY" --yes --cleanup-tag || true
-          gh release create latest NinjaLegends-unsigned.ipa --repo "$GITHUB_REPOSITORY" \
-            --title "Ninja Legends (unsigned IPA)" \
-            --notes "Built from Pomu1144/NXBNVNB. Direct link: https://github.com/$GITHUB_REPOSITORY/releases/latest/download/NinjaLegends-unsigned.ipa"
+          gh release create latest *.ipa --repo "$GITHUB_REPOSITORY" \
+            --title "Ninja Legends (unsigned IPAs)" \
+            --notes "Built from Pomu1144/NXBNVNB.
+          Live (small, loads the game from the website, updates itself): https://github.com/$GITHUB_REPOSITORY/releases/latest/download/NinjaLegends-live.ipa
+          Full offline (about 1.5 GB): https://github.com/$GITHUB_REPOSITORY/releases/latest/download/NinjaLegends-unsigned.ipa"
