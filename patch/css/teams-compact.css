@@ -178,3 +178,70 @@ html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):n
 }
 html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams #prebattle-footer .ss-btn { height: 40px !important; min-height: 0 !important; padding: 0 10px !important; transform: none !important; }
 html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams #prebattle-footer #btn-start-battle { height: 40px !important; min-height: 0 !important; font-size: 14px !important; padding: 0 18px !important; }
+
+/* ── Consistency pass: one control height (30px), one border, one corner style ──
+   Text controls (rename, search, sort) share the same boxed look; chips sit in an
+   even grid; footer buttons match in height and corners. */
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams {
+  --tc-ctl-h: 30px;
+  --tc-line: rgba(201, 168, 106, .45);
+  --tc-fill: rgba(10, 10, 12, .55);
+}
+/* the line under the team pills only ran under part of the bar */
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams .team-selector { box-shadow: none !important; }
+/* Rename: a boxed button like Sort instead of loose italic text */
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams .btn-rename-team,
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams .sort-btn {
+  height: var(--tc-ctl-h) !important; padding: 0 10px !important; box-sizing: border-box !important;
+  display: inline-flex !important; align-items: center !important; justify-content: center !important; gap: 5px !important;
+  border: 1px solid var(--tc-line) !important; border-radius: 0 !important; background: var(--tc-fill) !important;
+  clip-path: none !important; box-shadow: none !important;
+  font-style: normal !important; font-size: 12px !important; letter-spacing: .04em !important; line-height: 1 !important;
+  color: #ece2cd !important;
+}
+/* Search: same box as Sort (was an underline) */
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams .search-box {
+  height: var(--tc-ctl-h) !important; padding: 0 !important; border: 0 !important; box-shadow: none !important; background: none !important;
+}
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams .search-box::before,
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams .search-box::after { display: none !important; }
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams .search-box > img { left: 8px !important; width: 14px !important; height: 14px !important; }
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams #char-filter {
+  height: var(--tc-ctl-h) !important; padding: 0 8px 0 28px !important; box-sizing: border-box !important;
+  border: 1px solid var(--tc-line) !important; border-radius: 0 !important; background: var(--tc-fill) !important;
+  clip-path: none !important; box-shadow: none !important; font-size: 13px !important;
+}
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams .selection-tools { align-items: center !important; }
+/* Filters: two even rows (5 elements, 5 star tiers), every chip the same size */
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams .filter-bar {
+  display: grid !important; grid-template-columns: 1fr !important; gap: 4px !important; overflow: visible !important;
+}
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams .chip-group {
+  display: grid !important; grid-template-columns: repeat(5, minmax(0, 1fr)) !important; gap: 4px !important; width: 100% !important;
+}
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams .f-chip {
+  width: 100% !important; min-width: 0 !important; height: 24px !important; padding: 0 !important; margin: 0 !important;
+  display: inline-flex !important; align-items: center !important; justify-content: center !important; gap: 3px !important;
+  border: 1px solid rgba(201, 168, 106, .3) !important; border-radius: 0 !important; box-sizing: border-box !important;
+  font-size: 11px !important; line-height: 1 !important;
+}
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams .f-orb img { width: 16px !important; height: 16px !important; }
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams .f-star img { width: 10px !important; height: 10px !important; }
+/* Footer: Support and Start Mission the same height, square corners */
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams #prebattle-footer .ss-btn {
+  border-radius: 0 !important; border-color: var(--tc-line) !important; height: 38px !important; box-sizing: border-box !important;
+}
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams #prebattle-footer .ss-btn .ss-none,
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams #prebattle-footer .ss-btn img { width: 28px !important; height: 28px !important; border-radius: 0 !important; }
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams #prebattle-footer #btn-start-battle { height: 38px !important; box-sizing: border-box !important; }
+/* Save / Clear: same size, side by side */
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams .team-actions .btn-darkgold,
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams .team-actions .btn-dark {
+  flex: 0 0 110px !important; width: 110px !important; min-width: 0 !important; height: var(--tc-ctl-h) !important; padding: 0 !important;
+  box-sizing: border-box !important; display: inline-flex !important; align-items: center !important; justify-content: center !important;
+}
+/* Remove (×) on a slotted unit: same small square everywhere, inside the frame */
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams .slot-remove {
+  top: 4px !important; right: 4px !important; width: 18px !important; height: 18px !important; border-radius: 0 !important;
+  display: inline-flex !important; align-items: center !important; justify-content: center !important; line-height: 1 !important;
+}
