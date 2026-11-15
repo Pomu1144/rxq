@@ -86,10 +86,10 @@ jobs:
 
       - name: Add the Blazing art pack (sprites from your Blazing IPA, see tools/blazing_pack.py)
         env:
-          PACK_URL: ${{ vars.BLAZING_PACK_URL }}
+          PACK_URL: ${{ vars.BLAZING_PACK_URL || 'https://github.com/Pomu1144/rxq/raw/blazing-pack/blazing-pack.zip' }}
           PACK_TOKEN: ${{ secrets.BLAZING_PACK_TOKEN }}
         run: |
-          # The pack is kept out of this public repo (it is the game's own art). Point the BLAZING_PACK_URL variable
+          # The pack lives on the blazing-pack branch (kept out of main). The BLAZING_PACK_URL variable can point elsewhere
           # at a private place holding blazing-pack.zip (e.g. a release asset of a private repo; BLAZING_PACK_TOKEN
           # = a token that can read it). Without it the app is built without the pack.
           if [ -z "$PACK_URL" ]; then echo "::notice::BLAZING_PACK_URL not set: building without the Blazing art pack"; exit 0; fi
