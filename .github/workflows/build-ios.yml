@@ -31,7 +31,7 @@ jobs:
     timeout-minutes: 90
     strategy:
       matrix:
-        variant: [live, full]
+        variant: [live, lite, full]
     steps:
       - name: Checkout the game (NXBNVNB)
         uses: actions/checkout@v4
@@ -59,8 +59,10 @@ jobs:
         run: npm run sync
 
       - name: Live app - load the game from the website, but keep the sprites inside the app
-        if: matrix.variant == 'live'
+        if: matrix.variant == 'live' || matrix.variant == 'lite'
         working-directory: app
+        env:
+          VARIANT: ${{ matrix.variant }}
         run: |
           # Bare domain as the server (Capacitor then allows that origin to read the app's own files) and the
           # game's folder as the start path.
@@ -70,12 +72,16 @@ jobs:
             c.server = Object.assign({}, c.server, { url: process.env.LIVE_ORIGIN, appStartPath: process.env.LIVE_PATH, cleartext: false });
             fs.writeFileSync(p, JSON.stringify(c, null, 2));'
           rm -rf www && mkdir -p www/assets
-          cp -R ../assets/sprites www/assets/sprites
-          echo '{"ok":true}' > www/assets/sprites/rxq-probe.json
+          if [ "$VARIANT" = live ]; then
+            cp -R ../assets/sprites www/assets/sprites
+            echo '{"ok":true}' > www/assets/sprites/rxq-probe.json
+          fi
           printf '<!doctype html><meta charset="utf-8"><body style="background:#101418"></body>' > www/index.html
           du -sh www
           npx cap sync ios
           cat capacitor.config.json
+          # lite: nothing inside the app, everything (sprites too) comes from the website
+          [ "$VARIANT" = lite ] && exit 0
           # the script that sends sprite requests to the app's copy (see patch/sprites-local.swift in rxq)
           python3 - "$GITHUB_WORKSPACE/rxq-patch-repo/patch/sprites-local.swift" ios/App/App/GameViewController.swift <<'PY'
           import sys
@@ -107,7 +113,7 @@ jobs:
 
       - name: Package the IPA
         run: |
-          NAME=${{ matrix.variant == 'live' && 'NinjaLegends-live' || 'NinjaLegends-unsigned' }}
+          NAME=${{ matrix.variant == 'live' && 'NinjaLegends-live' || matrix.variant == 'lite' && 'NinjaLegends-lite' || 'NinjaLegends-unsigned' }}
           test -x app/ios/App/build/Release-iphoneos/App.app/App || { echo "no app binary: the build did not finish"; exit 1; }
           mkdir -p out/Payload
           cp -R app/ios/App/build/Release-iphoneos/App.app out/Payload/
@@ -138,5 +144,6 @@ jobs:
           gh release create latest *.ipa --repo "$GITHUB_REPOSITORY" \
             --title "Ninja Legends (unsigned IPAs)" \
             --notes "Built from Pomu1144/NXBNVNB.
-          Live (small, loads the game from the website, updates itself): https://github.com/$GITHUB_REPOSITORY/releases/latest/download/NinjaLegends-live.ipa
+          Lite (a few MB, everything incl. sprites from the website): https://github.com/$GITHUB_REPOSITORY/releases/latest/download/NinjaLegends-lite.ipa
+          Live (sprites inside, loads the game from the website, updates itself): https://github.com/$GITHUB_REPOSITORY/releases/latest/download/NinjaLegends-live.ipa
           Full offline (about 1.5 GB): https://github.com/$GITHUB_REPOSITORY/releases/latest/download/NinjaLegends-unsigned.ipa"
