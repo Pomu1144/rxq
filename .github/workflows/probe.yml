@@ -1,0 +1,14 @@
+name: Probe site
+on:
+  push:
+    branches: [probe]
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          B=https://pomu1144.github.io/NXBNVNB
+          for f in js/session-gate.js js/tutorial.js js/tutorial-steps.js village.html summon.html sw.js; do
+            echo "$f $(curl -sSL $B/$f | md5sum) $(curl -sSI $B/$f | grep -i '^last-modified')"
+          done
+          curl -sSL $B/summon.html | grep -n "<script" | head -30
