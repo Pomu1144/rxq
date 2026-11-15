@@ -15,3 +15,12 @@ GitHub Actions builds [NXBNVNB](https://github.com/Pomu1144/NXBNVNB)'s Capacitor
   (`css/teams-compact.css`, linked in `teams.html` after `css/ink/teams.css`); once it does, the app's copy steps aside.
 - `js/sprites-local.js`: live build only, loads sprites from the app's own copy.
 - `js/diag.js`: debug build only, a small on-screen log of page loads.
+
+## Blazing art pack (sprites from your Blazing IPA)
+
+`tools/blazing_pack.py BLAZING.ipa OUT` pulls the art out of a Naruto Blazing IPA (every texture, the UI atlases cut
+into named sprites with their 9-slice borders, character rigs) into a folder with a `manifest.json`. The build puts
+it in the app at `assets/blazing/` and the game reads it with `window.BlazingAssets` (`patch/js/blazing-assets.js`,
+in every build) and plays rigs with `window.SSPlayer`. The pack is the game's own art, so it is not kept in this public
+repo: set the repository variable `BLAZING_PACK_URL` (and secret `BLAZING_PACK_TOKEN` if it needs one) to where
+`blazing-pack.zip` lives. Without it the app builds without the pack.
