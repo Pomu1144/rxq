@@ -259,7 +259,15 @@
     return Object.entries(files).filter(([k]) => !k.endsWith('.resS') && !k.endsWith('.resource')).map(([, v]) => readSerialized(v));
   }
 
-  function convert(prefabU8, animU8, commonU8) {
+  function bundleTexture(u8) {
+    const files = readBundle(u8);
+    for (const sf of serializedFiles(files)) for (const o of sf.objects) if (o.type.classID === 28) return textureRGBA(sf.read(o), files);
+    return null;
+  }
+
+  /** prefab + clips bundles; commonU8 = shared effects texture (cells on map 0); texU8 = the unit's own part texture
+   *  when it lives in its own bundle (sprite/unit/textures/NNNNN_unit.png) instead of inside the prefab */
+  function convert(prefabU8, animU8, commonU8, texU8) {
     const pf = readBundle(prefabU8);
     const parts = {}, images = {};
     let ctl = null, tex = null;
@@ -275,7 +283,8 @@
         }
       }
     }
-    if (!ctl || !tex) throw new Error('ss-unity: not a SpriteStudio unit prefab');
+    if (texU8) tex = bundleTexture(texU8) || tex;
+    if (!ctl || !tex) throw new Error('ss-unity: not a SpriteStudio unit prefab (or its texture is missing)');
     const n = Object.keys(parts).length;
     const outParts = [];
     for (let i = 0; i < n; i++) {
@@ -289,7 +298,8 @@
     images[1] = tex;
     const maps = { 1: { w: tex.width, h: tex.height } };
     if (commonU8 && cells.some((c) => c.map === 0)) {
-      for (const sf of serializedFiles(readBundle(commonU8))) for (const o of sf.objects) if (o.type.classID === 28) { images[0] = textureRGBA(sf.read(o), readBundle(commonU8)); maps[0] = { w: images[0].width, h: images[0].height }; }
+      const t0 = bundleTexture(commonU8);
+      if (t0) { images[0] = t0; maps[0] = { w: t0.width, h: t0.height }; }
     }
     const pathIndex = new Map(outParts.map((p, i) => [crc32(p.path), i]));
 
@@ -347,8 +357,27 @@
   async function fetchBytes(url) { const r = await fetch(url); if (!r.ok) throw new Error('ss-unity: ' + r.status + ' ' + url); return new Uint8Array(await r.arrayBuffer()); }
 
   const cache = {};
+  function build(key, parts) {
+    if (!cache[key]) {
+      cache[key] = Promise.all(parts).then(([p, a, c, t]) => {
+        const { rig, images } = convert(p, a, c, t);
+        const canv = {}; for (const k of Object.keys(images)) canv[k] = toCanvas(images[k]);
+        return new global.SSPlayer.SSCharacter(rig, canv);
+      });
+      cache[key].catch(() => { delete cache[key]; });
+    }
+    return cache[key];
+  }
   const SSUnity = {
     readBundle, readSerialized, convert, crc32,
+    /** rec: { sprite, anim, tex } logical bundle paths (from the engine's character catalog / rxq unit map) */
+    loadPaths(base, rec) {
+      return build(base + '|' + rec.sprite + '|' + rec.tex, [
+        fetchBytes(base + rec.sprite), fetchBytes(base + rec.anim),
+        fetchBytes(base + 'sprite/unit/textures/common_unit.png').catch(() => null),
+        rec.tex ? fetchBytes(base + rec.tex).catch(() => null) : Promise.resolve(null),
+      ]);
+    },
     /** base: URL of the folder holding sprite/unit/... (the game's AssetBundle/iOS folder, or the offline engine's /assets/) */
     loadUnit(base, id) {
       const key = base + '|' + id;
