@@ -31,7 +31,7 @@ jobs:
     timeout-minutes: 90
     strategy:
       matrix:
-        variant: [live, lite, full]
+        variant: [live, lite, debug, full]
     steps:
       - name: Checkout the game (NXBNVNB)
         uses: actions/checkout@v4
@@ -59,7 +59,7 @@ jobs:
         run: npm run sync
 
       - name: Live app - load the game from the website, but keep the sprites inside the app
-        if: matrix.variant == 'live' || matrix.variant == 'lite'
+        if: matrix.variant != 'full'
         working-directory: app
         env:
           VARIANT: ${{ matrix.variant }}
@@ -85,8 +85,9 @@ jobs:
           cat capacitor.config.json
           # lite: nothing inside the app, everything (sprites too) comes from the website
           [ "$VARIANT" = lite ] && exit 0
+          SNIPPET=sprites-local.swift; [ "$VARIANT" = debug ] && SNIPPET=diag.swift
           # the script that sends sprite requests to the app's copy (see patch/sprites-local.swift in rxq)
-          python3 - "$GITHUB_WORKSPACE/rxq-patch-repo/patch/sprites-local.swift" ios/App/App/GameViewController.swift <<'PY'
+          python3 - "$GITHUB_WORKSPACE/rxq-patch-repo/patch/$SNIPPET" ios/App/App/GameViewController.swift <<'PY'
           import sys
           snippet = open(sys.argv[1]).read(); p = sys.argv[2]; s = open(p).read()
           anchor = "class GameViewController: CAPBridgeViewController {"
@@ -94,7 +95,7 @@ jobs:
           s = s.replace("import Capacitor", "import Capacitor\nimport WebKit", 1)
           s = s.replace(anchor, anchor + "\n" + snippet, 1)
           open(p, "w").write(s)
-          print("sprites-local script added to GameViewController")
+          print(sys.argv[1], "added to GameViewController")
           PY
 
       - name: Fix for Capacitor 8 (drop an override it no longer allows)
@@ -116,7 +117,7 @@ jobs:
 
       - name: Package the IPA
         run: |
-          NAME=${{ matrix.variant == 'live' && 'NinjaLegends-live' || matrix.variant == 'lite' && 'NinjaLegends-lite' || 'NinjaLegends-unsigned' }}
+          NAME=${{ matrix.variant == 'live' && 'NinjaLegends-live' || matrix.variant == 'lite' && 'NinjaLegends-lite' || matrix.variant == 'debug' && 'NinjaLegends-debug' || 'NinjaLegends-unsigned' }}
           test -x app/ios/App/build/Release-iphoneos/App.app/App || { echo "no app binary: the build did not finish"; exit 1; }
           mkdir -p out/Payload
           cp -R app/ios/App/build/Release-iphoneos/App.app out/Payload/
@@ -148,5 +149,6 @@ jobs:
             --title "Ninja Legends (unsigned IPAs)" \
             --notes "Built from Pomu1144/NXBNVNB.
           Lite (a few MB, everything incl. sprites from the website): https://github.com/$GITHUB_REPOSITORY/releases/latest/download/NinjaLegends-lite.ipa
+          Debug (Lite plus an on-screen log, for finding bugs): https://github.com/$GITHUB_REPOSITORY/releases/latest/download/NinjaLegends-debug.ipa
           Live (sprites inside, loads the game from the website, updates itself): https://github.com/$GITHUB_REPOSITORY/releases/latest/download/NinjaLegends-live.ipa
           Full offline (about 1.5 GB): https://github.com/$GITHUB_REPOSITORY/releases/latest/download/NinjaLegends-unsigned.ipa"
