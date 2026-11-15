@@ -1,0 +1,180 @@
+/* ==========================================================================
+   Team Formation: phone landscape layout (html.is-mobile.is-landscape.is-compact)
+   One screen, no page scroll:
+     ┌ title · team pills 1–8 · rename ──────────────────────────────┐
+     │ formation (front row / back row, labels on the side)   │ roster │
+     │ commander · synergies · save/clear (scroll in panel)   │ search │
+     └ prebattle footer (support / start) ────────────────────────────┘
+   Loaded after teams.css; everything is scoped to this page and phones.
+   ========================================================================== */
+
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams {
+  --tc-top: calc(env(safe-area-inset-top, 0px) + 6px);
+  --tc-left: 112px;                     /* right of the side menu */
+  --tc-right: max(8px, env(safe-area-inset-right, 0px));
+  --tc-bar-h: 34px;                     /* title + team pills row */
+  --tc-foot: 0px;                       /* prebattle footer height (set below) */
+  --tc-gap: 8px;
+  overflow: hidden !important;
+}
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams:has(#prebattle-footer) { --tc-foot: 50px; }
+
+/* ── Top bar: small title on the left, team pills beside it ─────────────── */
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams .jjk-page-header {
+  top: var(--tc-top) !important; left: var(--tc-left) !important;
+  height: var(--tc-bar-h) !important; padding: 0 !important; align-items: center !important;
+}
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams .jjk-page-header .jjk-back { display: none !important; }
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams .jjk-page-header h1 {
+  font-size: 17px !important; letter-spacing: .14em !important; line-height: 1 !important;
+  padding: 0 !important; margin: 0 !important; height: auto !important; white-space: nowrap;
+}
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams .jjk-page-header h1::after,
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams .jjk-page-header h1::before { display: none !important; }
+
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams .team-content {
+  position: fixed !important; inset: 0 !important;
+  padding: var(--tc-top) var(--tc-right) calc(var(--tc-foot) + 6px) var(--tc-left) !important;
+  display: flex !important; flex-direction: column !important; gap: 6px !important;
+  box-sizing: border-box !important; overflow: hidden !important; max-width: none !important;
+}
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams .team-selector {
+  height: var(--tc-bar-h) !important; margin: 0 0 0 200px !important; padding: 0 !important;
+  display: flex !important; align-items: center !important; gap: 8px !important; flex: 0 0 auto !important;
+  border: 0 !important;
+}
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams .team-tabs-row {
+  display: flex !important; flex-wrap: nowrap !important; gap: 4px !important; margin: 0 !important;
+  overflow-x: auto; scrollbar-width: none; flex: 1 1 auto; min-width: 0;
+}
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams .team-tabs-row::-webkit-scrollbar { display: none; }
+/* "Team 3" -> "3" in a round pill */
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams .team-tab.jjk-tab {
+  flex: 0 0 auto !important; min-width: 0 !important; width: 30px !important; height: 30px !important;
+  padding: 0 !important; border-radius: 50% !important; font-size: 0 !important; color: transparent !important;
+  overflow: hidden !important; white-space: nowrap !important; position: relative !important; line-height: 0 !important;
+  display: inline-flex !important; align-items: center !important; justify-content: center !important;
+  border: 1px solid rgba(201, 168, 106, .35) !important; background: rgba(10, 10, 12, .55) !important;
+  box-shadow: none !important;
+}
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams .team-tab.jjk-tab::before { display: none !important; }
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams .team-tab.jjk-tab::after {
+  content: attr(data-team) !important; position: absolute !important; display: flex !important;
+  align-items: center; justify-content: center; line-height: 1 !important;
+  font-size: 13px !important; color: rgba(236, 226, 205, .75); background: none !important;
+  inset: 0 !important; width: auto !important; height: auto !important; transform: none !important; opacity: 1 !important; border: 0 !important;
+}
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams .team-tab.jjk-tab.active {
+  background: linear-gradient(180deg, #e8cf94, #b48a45) !important; border-color: #f0dca8 !important;
+}
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams .team-tab.jjk-tab.active::after { color: #1a140b !important; font-weight: 700; }
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams .btn-rename-team {
+  flex: 0 0 auto !important; font-size: 12px !important; height: 28px !important; padding: 0 10px !important;
+  margin: 0 !important; white-space: nowrap;
+}
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams .btn-rename-team::after { display: none !important; }
+
+/* ── Two panels filling the rest of the screen ──────────────────────────── */
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams .team-workspace {
+  flex: 1 1 auto !important; min-height: 0 !important; margin: 0 !important;
+  display: grid !important; grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr) !important;
+  gap: var(--tc-gap) !important; align-items: stretch !important;
+}
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams .team-formation,
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams .char-selection {
+  position: relative !important; top: auto !important; height: auto !important; min-height: 0 !important;
+  margin: 0 !important; padding: 8px 10px !important; box-sizing: border-box !important;
+}
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams .team-formation {
+  overflow-y: auto !important; overscroll-behavior: contain; scrollbar-width: none;
+}
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams .team-formation::-webkit-scrollbar { display: none; }
+
+/* Formation header: one line */
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams .formation-header {
+  margin: 0 0 6px !important; padding: 0 0 5px !important; min-height: 0 !important; height: auto !important;
+  display: flex !important; align-items: baseline !important; gap: 10px !important; flex-wrap: nowrap !important;
+}
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams .formation-header h2 { font-size: 15px !important; margin: 0 !important; white-space: nowrap; }
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams .team-stats { font-size: 8.5px !important; gap: 10px !important; white-space: nowrap; margin-left: auto !important;
+  display: flex !important; flex-direction: row !important; flex-wrap: nowrap !important; align-items: baseline !important; }
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams .team-stats span { display: inline !important; margin: 0 !important; padding: 0 !important; }
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams .formation-header h2::after { display: none !important; }
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams .team-stats strong { font-size: 13px !important; }
+
+/* Rows: label in a narrow column on the left, 4 slots on the right */
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams .formation-section:not(.commander-section):not(.synergy-section) {
+  display: grid !important; grid-template-columns: 18px minmax(0, 1fr) !important; align-items: stretch !important;
+  gap: 6px !important; margin: 0 0 6px !important; padding: 0 !important; border: 0 !important;
+}
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams .formation-section:not(.commander-section):not(.synergy-section) > .section-label {
+  writing-mode: vertical-rl; text-orientation: mixed; margin: 0 !important; padding: 0 !important;
+  font-size: 9px !important; letter-spacing: .25em !important; text-align: center; white-space: nowrap;
+  display: flex !important; align-items: center; justify-content: center;
+  border-right: 1px solid rgba(201, 168, 106, .35); color: #c9a86a;
+}
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams .formation-section > .section-label::before,
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams .formation-section > .section-label::after { display: none !important; }
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams .slot-row {
+  display: grid !important; grid-template-columns: repeat(4, minmax(0, 1fr)) !important; gap: 6px !important; margin: 0 !important;
+}
+/* Slot height follows the panel: two rows fit with the header */
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams .slot-row .team-slot {
+  min-height: 0 !important; height: clamp(64px, calc((100dvh - var(--tc-top) - var(--tc-bar-h) - var(--tc-foot) - 80px) / 2), 112px) !important;
+  aspect-ratio: auto !important; padding: 0 !important;
+}
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams .slot-empty { font-size: 8px !important; letter-spacing: .3em !important; }
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams .slot-empty::before { font-size: 20px !important; }
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams .slot-row .slot-card { height: 100% !important; padding: 3px !important; box-sizing: border-box; }
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams .slot-row .slot-card .portrait { height: 100% !important; padding: 0 !important; }
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams .slot-row .slot-card .portrait img:not(.ultimate-badge) {
+  width: 100% !important; height: 100% !important; max-width: none !important; aspect-ratio: auto !important; object-fit: cover; object-position: top;
+}
+
+/* Commander / synergies / buttons: below the rows, reached by scrolling the panel */
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams .commander-section,
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams .synergy-section { margin: 8px 0 0 !important; }
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams .commander-section .section-label,
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams .synergy-section .section-label { font-size: 11px !important; margin: 0 0 6px !important; }
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams .commander-container { grid-template-columns: 84px 1fr !important; gap: 8px !important; }
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams .commander-slot { min-height: 84px !important; height: 84px !important; }
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams .commander-info { font-size: 11px !important; }
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams .team-actions {
+  position: static !important; margin: 10px 0 2px !important; padding: 0 !important;
+  display: flex !important; gap: 8px !important; justify-content: flex-end;
+}
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams .team-actions .btn-darkgold,
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams .team-actions .btn-dark { min-width: 96px !important; height: 30px !important; font-size: 12px !important; }
+
+/* ── Roster ─────────────────────────────────────────────────────────────── */
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams .char-selection { display: flex !important; flex-direction: column !important; overflow: hidden !important; }
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams .selection-header { margin: 0 0 6px !important; padding: 0 !important; }
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams .selection-tools { gap: 6px !important; flex-wrap: nowrap !important; }
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams .search-box { height: 30px !important; min-width: 0 !important; flex: 1 1 auto !important; padding: 0 6px !important; }
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams .search-box svg,
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams .search-box img { width: 16px !important; height: 16px !important; }
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams #char-filter { height: 30px !important; font-size: 13px !important; }
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams .sort-btn { height: 30px !important; font-size: 12px !important; padding: 0 8px !important; flex: 0 0 auto; }
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams .sort-btn svg,
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams .sort-btn img { width: 14px !important; height: 14px !important; }
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams .filter-bar { margin: 0 0 6px !important; padding: 0 0 6px !important; display: flex !important; flex-wrap: nowrap !important; gap: 6px !important; overflow-x: auto !important; scrollbar-width: none; }
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams .filter-bar::-webkit-scrollbar { display: none; }
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams .chip-group { flex-wrap: nowrap !important; gap: 2px !important; flex: 0 0 auto !important; }
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams .f-chip { height: 24px !important; min-width: 22px !important; padding: 0 3px !important; font-size: 11px !important; flex: 0 0 auto !important; }
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams .f-star img { width: 9px !important; height: 9px !important; }
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams .f-orb img { width: 16px !important; height: 16px !important; }
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams #team-char-grid {
+  flex: 1 1 auto !important; min-height: 0 !important; max-height: none !important; overflow-y: auto !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important; gap: 5px !important; align-content: start;
+  padding: 0 !important; overscroll-behavior: contain;
+}
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams .team-char-card > img { height: auto !important; aspect-ratio: 1 !important; width: 100% !important; object-fit: cover; object-position: top; }
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams .team-char-card-info { padding: 2px 3px !important; font-size: 8.5px !important; line-height: 1.2 !important; }
+
+/* ── Prebattle footer: slimmer ──────────────────────────────────────────── */
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams #prebattle-footer {
+  height: var(--tc-foot) !important; min-height: 0 !important; padding: 0 var(--tc-right) 0 12px !important;
+  gap: 10px !important; align-items: center !important; box-sizing: border-box !important;
+}
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams #prebattle-footer .ss-btn { height: 40px !important; min-height: 0 !important; padding: 0 10px !important; transform: none !important; }
+html.is-mobile.is-landscape.is-compact:not(._t1):not(._t2):not(._t3):not(._t4):not(._t5):not(._t6) body.page-teams #prebattle-footer #btn-start-battle { height: 40px !important; min-height: 0 !important; font-size: 14px !important; padding: 0 18px !important; }

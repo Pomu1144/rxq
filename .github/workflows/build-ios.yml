@@ -83,20 +83,19 @@ jobs:
           du -sh www
           npx cap sync ios
           cat capacitor.config.json
-          # lite: nothing inside the app, everything (sprites too) comes from the website
-          [ "$VARIANT" = lite ] && exit 0
-          SNIPPET=sprites-local.swift; [ "$VARIANT" = debug ] && SNIPPET=diag.swift
-          # the script that sends sprite requests to the app's copy (see patch/sprites-local.swift in rxq)
-          python3 - "$GITHUB_WORKSPACE/rxq-patch-repo/patch/$SNIPPET" ios/App/App/GameViewController.swift <<'PY'
-          import sys
-          snippet = open(sys.argv[1]).read(); p = sys.argv[2]; s = open(p).read()
-          anchor = "class GameViewController: CAPBridgeViewController {"
-          assert anchor in s, "GameViewController changed: update rxq"
-          s = s.replace("import Capacitor", "import Capacitor\nimport WebKit", 1)
-          s = s.replace(anchor, anchor + "\n" + snippet, 1)
-          open(p, "w").write(s)
-          print(sys.argv[1], "added to GameViewController")
-          PY
+
+      - name: Add rxq's page scripts and style fixes to the app (see patch/ in rxq)
+        working-directory: app
+        env:
+          VARIANT: ${{ matrix.variant }}
+        run: |
+          # css/teams-compact.css: the phone layout of the Team Formation page (all builds, until NXBNVNB has it)
+          # js/sprites-local.js:   live build only, loads sprites from the app's own copy
+          # js/diag.js:            debug build only, the on-screen page log
+          FILES="css/teams-compact.css"
+          [ "$VARIANT" = live ] && FILES="js/sprites-local.js $FILES"
+          [ "$VARIANT" = debug ] && FILES="js/diag.js $FILES"
+          python3 "$GITHUB_WORKSPACE/rxq-patch-repo/patch/inject.py" ios/App/App/GameViewController.swift $FILES
 
       - name: Fix for Capacitor 8 (drop an override it no longer allows)
         working-directory: app/ios/App/App
