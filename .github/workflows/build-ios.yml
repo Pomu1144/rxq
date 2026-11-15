@@ -2,8 +2,9 @@ name: Build iOS IPA (unsigned)
 
 # Builds the Ninja Legends iPhone app from Pomu1144/NXBNVNB (its Capacitor project in app/ios) on a free
 # GitHub macOS runner, in two versions, and publishes both as the "latest" release:
-#   NinjaLegends-live.ipa      a few MB: the app loads the game from the GitHub Pages site, so every change
-#                              pushed to NXBNVNB shows up on the next launch without reinstalling (needs internet)
+#   NinjaLegends-live.ipa      about 300 MB: the game's pages and art come from the GitHub Pages site, so every
+#                              change pushed to NXBNVNB shows up on the next launch without reinstalling (needs
+#                              internet), but the sprites (assets/sprites) are inside the app
 #   NinjaLegends-unsigned.ipa  the full offline app with all the game files inside (about 1.5 GB)
 # NXBNVNB itself is only read, never changed. Sign and install with your sideloading tool.
 # Runs on every push to this repo's main branch, or by hand: Actions tab -> Build iOS IPA -> Run workflow.
@@ -21,7 +22,8 @@ permissions:
   contents: write          # to publish the IPAs as the 'latest' release
 
 env:
-  LIVE_URL: https://pomu1144.github.io/NXBNVNB/
+  LIVE_ORIGIN: https://pomu1144.github.io
+  LIVE_PATH: NXBNVNB/
 
 jobs:
   ipa:
@@ -37,6 +39,11 @@ jobs:
           repository: Pomu1144/NXBNVNB
           ref: ${{ github.event.inputs.ref || 'main' }}
 
+      - name: Checkout rxq (build patches)
+        uses: actions/checkout@v4
+        with:
+          path: rxq-patch-repo
+
       - name: Node
         uses: actions/setup-node@v4
         with:
@@ -51,19 +58,35 @@ jobs:
         working-directory: app
         run: npm run sync
 
-      - name: Live app - point the app at the website instead of bundling the game
+      - name: Live app - load the game from the website, but keep the sprites inside the app
         if: matrix.variant == 'live'
         working-directory: app
         run: |
+          # Bare domain as the server (Capacitor then allows that origin to read the app's own files) and the
+          # game's folder as the start path.
           node -e '
             const fs = require("fs"); const p = "capacitor.config.json";
             const c = JSON.parse(fs.readFileSync(p, "utf8"));
-            c.server = Object.assign({}, c.server, { url: process.env.LIVE_URL, cleartext: false });
+            c.server = Object.assign({}, c.server, { url: process.env.LIVE_ORIGIN, appStartPath: process.env.LIVE_PATH, cleartext: false });
             fs.writeFileSync(p, JSON.stringify(c, null, 2));'
-          rm -rf www && mkdir www
-          printf '<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><body style="background:#101418;color:#ccc;font-family:-apple-system;display:flex;align-items:center;justify-content:center;height:100vh;margin:0"><p>Loading Ninja Legends&hellip; (needs an internet connection)</p><script>location.replace("%s")</script>' "$LIVE_URL" > www/index.html
+          rm -rf www && mkdir -p www/assets
+          cp -R ../assets/sprites www/assets/sprites
+          echo '{"ok":true}' > www/assets/sprites/rxq-probe.json
+          printf '<!doctype html><meta charset="utf-8"><body style="background:#101418"></body>' > www/index.html
+          du -sh www
           npx cap sync ios
           cat capacitor.config.json
+          # the script that sends sprite requests to the app's copy (see patch/sprites-local.swift in rxq)
+          python3 - "$GITHUB_WORKSPACE/rxq-patch-repo/patch/sprites-local.swift" ios/App/App/GameViewController.swift <<'PY'
+          import sys
+          snippet = open(sys.argv[1]).read(); p = sys.argv[2]; s = open(p).read()
+          anchor = "class GameViewController: CAPBridgeViewController {"
+          assert anchor in s, "GameViewController changed: update rxq"
+          s = s.replace("import Capacitor", "import Capacitor\nimport WebKit", 1)
+          s = s.replace(anchor, anchor + "\n" + snippet, 1)
+          open(p, "w").write(s)
+          print("sprites-local script added to GameViewController")
+          PY
 
       - name: Fix for Capacitor 8 (drop an override it no longer allows)
         working-directory: app/ios/App/App
